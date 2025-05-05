@@ -1,31 +1,32 @@
-import React from "react";
+import React from 'react';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import "@solana/wallet-adapter-react-ui/styles.css";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import '@solana/wallet-adapter-react-ui/styles.css';
 
-import { toast } from "sonner";
-import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
+import { toast } from 'sonner';
+import { useAnchorWallet, useWallet } from '@solana/wallet-adapter-react';
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { request } from "graphql-request";
-import { config } from "@/solana-service/config";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { clusterApiUrl } from "@solana/web3.js";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { request } from 'graphql-request';
+import { config } from '@/solana-service/config';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { clusterApiUrl } from '@solana/web3.js';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 
-import { EscrowProgram } from "@/solana-service/program";
-import { Wallet } from "@coral-xyz/anchor";
-import { OffersPage } from "@/pages/all-offers";
-import { OpenOffersPage } from "@/pages/open-offers";
-import AccountOffers from "@/pages/account-offers";
-import { Offer } from "@/types/offer";
+import { EscrowProgram } from '@/solana-service/program';
+import { Wallet } from '@coral-xyz/anchor';
+import { OffersPage } from '@/pages/all-offers';
+import { OpenOffersPage } from '@/pages/open-offers';
+import AccountOffers from '@/pages/account-offers';
+import UserTokensPage from '@/pages/user-tokens';
+import { Offer } from '@/types/offer';
 
-import { Toaster } from "sonner";
-import { createPass, query } from "./utils";
+import { Toaster } from 'sonner';
+import { createPass, query } from './utils';
 
-import TakeOfferDialog from "@/components/dialogs/take-offer-dialog";
+import TakeOfferDialog from '@/components/dialogs/take-offer-dialog';
 
 const App: React.FC = () => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -36,7 +37,7 @@ const App: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
-    queryKey: ["offers"],
+    queryKey: ['offers'],
     async queryFn() {
       return await request<{ offers: Offer[] | undefined }>(
         config.subgraphUrl,
@@ -79,8 +80,8 @@ const App: React.FC = () => {
       select(wallets[0].adapter.name);
       await connect();
       return;
-    } catch (e) {
-      toast.error("Error connecting to wallet");
+    } catch {
+      toast.error('Error connecting to wallet');
     }
   };
 
@@ -104,10 +105,10 @@ const App: React.FC = () => {
         new PublicKey(selectedOffer?.acctTokenMintA),
         new PublicKey(selectedOffer?.acctTokenMintB)
       );
-    } catch (e) {
-      toast.error("Error taking offer");
+    } catch {
+      toast.error('Error taking offer');
     } finally {
-      await queryClient.invalidateQueries({ queryKey: ["offers"] });
+      await queryClient.invalidateQueries({ queryKey: ['offers'] });
       setLoading(false);
     }
   };
@@ -136,10 +137,11 @@ const App: React.FC = () => {
           Password: {createPass(walletAddress)}
         </h2>
         <Tabs defaultValue="orders" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="orders">All Offers</TabsTrigger>
             <TabsTrigger value="openOffers">Open Offers</TabsTrigger>
             <TabsTrigger value="accountOffers">Account Offers</TabsTrigger>
+            <TabsTrigger value="userTokens">Your Tokens</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders">
@@ -148,7 +150,7 @@ const App: React.FC = () => {
               paginatedOffers={paginatedOffers}
               currentPage={currentPage.orders}
               totalPages={totalPages.orders}
-              onPageChange={(page) => handlePageChange("orders", page)}
+              onPageChange={(page) => handlePageChange('orders', page)}
             />
           </TabsContent>
 
@@ -157,13 +159,22 @@ const App: React.FC = () => {
               paginatedOpenOffers={paginatedOpenOffers}
               currentPage={currentPage.openOffers}
               totalPages={totalPages.openOffers}
-              onPageChange={(page) => handlePageChange("openOffers", page)}
+              onPageChange={(page) => handlePageChange('openOffers', page)}
               onTakeOffer={(offer: Offer) => setSelectedOffer(offer)}
             />
           </TabsContent>
 
           <TabsContent value="accountOffers">
             <AccountOffers
+              isWalletConnected={isWalletConnected}
+              disconnect={disconnect}
+              setIsWalletConnected={setIsWalletConnected}
+              loading={loading}
+            />
+          </TabsContent>
+
+          <TabsContent value="userTokens">
+            <UserTokensPage
               isWalletConnected={isWalletConnected}
               disconnect={disconnect}
               setIsWalletConnected={setIsWalletConnected}

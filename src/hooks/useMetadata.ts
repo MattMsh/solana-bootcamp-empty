@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useQuery } from '@tanstack/react-query';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { useConnection } from '@solana/wallet-adapter-react';
 import {
   getMint,
   getTokenMetadata,
   TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
-import { Metaplex } from "@metaplex-foundation/js";
-import { ENV, TokenListProvider } from "@solana/spl-token-registry";
+} from '@solana/spl-token';
+import { Metaplex } from '@metaplex-foundation/js';
+import { ENV, TokenListProvider } from '@solana/spl-token-registry';
 
 interface TokenMetadata {
   address: string;
@@ -19,32 +19,32 @@ interface TokenMetadata {
 
 const DUMMY_TOKENS: Record<string, TokenMetadata> = {
   GdHsojisNu8RH92k4JzF1ULzutZgfg8WRL5cHkoW2HCK: {
-    address: "GdHsojisNu8RH92k4JzF1ULzutZgfg8WRL5cHkoW2HCK",
-    icon: "🌭",
-    symbol: "HOT",
-    name: "Hot",
+    address: 'GdHsojisNu8RH92k4JzF1ULzutZgfg8WRL5cHkoW2HCK',
+    icon: '🌭',
+    symbol: 'HOT',
+    name: 'Hot',
     decimals: 9,
   },
-  "9NCKufE7BQrTXTang2WjXjBe2vdrfKArRMq2Nwmn4o8S": {
-    address: "9NCKufE7BQrTXTang2WjXjBe2vdrfKArRMq2Nwmn4o8S",
-    icon: "🍔",
-    symbol: "Burger",
-    name: "Burger",
+  '9NCKufE7BQrTXTang2WjXjBe2vdrfKArRMq2Nwmn4o8S': {
+    address: '9NCKufE7BQrTXTang2WjXjBe2vdrfKArRMq2Nwmn4o8S',
+    icon: '🍔',
+    symbol: 'Burger',
+    name: 'Burger',
     decimals: 9,
   },
   So11111111111111111111111111111111111111112: {
-    address: "So11111111111111111111111111111111111111112",
-    symbol: "SOL",
-    name: "Wrapped SOL",
+    address: 'So11111111111111111111111111111111111111112',
+    symbol: 'SOL',
+    name: 'Wrapped SOL',
     decimals: 9,
-    icon: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+    icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png',
   },
   EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: {
-    address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    symbol: "USDC",
-    name: "USD Coin",
+    address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    symbol: 'USDC',
+    name: 'USD Coin',
     decimals: 6,
-    icon: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+    icon: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
   },
 };
 
@@ -61,7 +61,7 @@ async function fetchTokenMetadata(
       const mintData = await getMint(
         connection,
         new PublicKey(mintAddress),
-        "confirmed",
+        'confirmed',
         ownerAddress?.owner
       );
 
@@ -115,19 +115,22 @@ async function fetchTokenMetadata(
         }
       }
 
+      // Fallback to native metadata
+      console.log({ metadata });
+
       if (!metadata.decimals) {
-        throw new Error("No metadata found");
+        throw new Error('No metadata found');
       }
 
       return {
         address: mintAddress,
-        symbol: metadata.symbol || "UNKNOWN",
-        name: metadata.name || "Unknown Token",
+        symbol: metadata.symbol || 'UNKNOWN',
+        name: metadata.name || 'Unknown Token',
         decimals: mintData.decimals,
-        icon: metadata?.icon || "👁",
+        icon: metadata?.icon || '👁',
       };
     } catch (e) {
-      console.log("No Metaplex metadata found, using dummy data if available");
+      console.log('No Metaplex metadata found, using dummy data if available');
 
       if (DUMMY_TOKENS[mintAddress]) {
         return DUMMY_TOKENS[mintAddress];
@@ -135,14 +138,14 @@ async function fetchTokenMetadata(
 
       return {
         address: mintAddress,
-        symbol: "UNKNOWN",
-        name: "Unknown Token",
+        symbol: 'UNKNOWN',
+        name: 'Unknown Token',
         decimals: 9,
-        icon: "👁",
+        icon: '👁',
       };
     }
   } catch (error) {
-    console.error("Error fetching token metadata:", error);
+    console.error('Error fetching token metadata:', error);
     throw error;
   }
 }
@@ -151,10 +154,10 @@ export function useMetadata(mintAddress?: string) {
   const { connection } = useConnection();
 
   return useQuery({
-    queryKey: ["tokenMetadata", mintAddress],
+    queryKey: ['tokenMetadata', mintAddress],
     queryFn: async () => {
       if (!mintAddress) {
-        throw new Error("Mint address is required");
+        throw new Error('Mint address is required');
       }
       return fetchTokenMetadata(connection, mintAddress);
     },
@@ -175,7 +178,7 @@ export function useMultipleMetadata(mintAddresses: string[]) {
   const { connection } = useConnection();
 
   return useQuery({
-    queryKey: ["multipleTokenMetadata", mintAddresses],
+    queryKey: ['multipleTokenMetadata', mintAddresses],
     queryFn: async () => {
       const metadataPromises = mintAddresses.map(async (address) => {
         const metadata = await fetchTokenMetadata(connection, address);
